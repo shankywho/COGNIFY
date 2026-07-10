@@ -1,0 +1,47 @@
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production Builds & Compiled Artifacts
+dist/
+*/dist/
+build/
+*/build/
+*.tsbuildinfo
+
+# Logs & Diagnostics
+logs/
+*/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Local Data & Uploads
+uploads/
+*/uploads/
+postgres_data/
+
+# Deployment & Internal scripts
+deploy.sh
+scratch/
+
+# Agent local tooling & skills
+.agents/
+.claude/
+agent/
+skills-lock.json

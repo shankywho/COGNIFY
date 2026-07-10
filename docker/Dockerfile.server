@@ -1,0 +1,31 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy root workspace configurations
+COPY package.json ./
+COPY server/package*.json ./server/
+COPY database ./database
+
+# Install dependencies and build
+RUN npm install
+RUN cd server && npx prisma generate --schema=../database/schema.prisma
+COPY server ./server
+RUN npm run build:server
+
+# Production runtime stage
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+COPY package.json ./
+COPY server/package*.json ./server/
+COPY database ./database
+
+RUN npm install --omit=dev
+RUN cd server && npx prisma generate --schema=../database/schema.prisma
+COPY --from=builder /app/server/dist ./server/dist
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev:server"]

@@ -1,0 +1,44 @@
+{
+  "name": "cognify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise AI Operations & Multi-Agent Orchestration Platform",
+  "workspaces": [
+    "cognify-client",
+    "cognify-server"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:web": "npm run dev --workspace=cognify-client",
+    "dev:server": "npm run dev --workspace=cognify-server",
+    "build": "npm run build --workspaces --if-present",
+    "build:web": "npm run build --workspace=cognify-client",
+    "build:server": "npm run build --workspace=cognify-server",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspace=cognify-server",
+    "db:generate": "npm run db:generate --workspace=cognify-server",
+    "db:push": "npm run db:push --workspace=cognify-server",
+    "db:seed": "npm run db:seed --workspace=cognify-server",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "orchestration",
+    "workflow",
+    "react-flow",
+    "llm",
+    "saas"
+  ],
+  "author": "Cognify Contributors",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.3"
+  }
+}
