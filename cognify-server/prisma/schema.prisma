@@ -1,0 +1,403 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  password_hash String
+  name          String?
+  role          Role        @default(USER)
+  created_at    DateTime    @default(now())
+
+  workspaces      Workspace[]
+  files           File[]
+  ai_requests     AIRequest[]
+  api_keys        APIKey[]
+  subscription    Subscription?
+  teams           TeamMember[]
+  messages        Message[]
+  prompt_versions PromptVersion[]
+  workflows       Workflow[]
+  workflow_runs   WorkflowRun[]
+  comments        Comment[]
+  integration_credentials IntegrationCredential[]
+}
+
+model Workspace {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  creditBalance Int      @default(0) @map("credit_balance")
+  created_at    DateTime @default(now())
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+
+  files           File[]
+  ai_requests     AIRequest[]
+  embeddings      Embedding[]
+  messages        Message[]
+  team_workspaces TeamWorkspace[]
+  prompt_versions PromptVersion[]
+  workflows       Workflow[]
+  workflow_runs   WorkflowRun[]
+  credit_ledgers  CreditLedger[]
+  comments        Comment[]
+  integration_credentials IntegrationCredential[]
+
+  @@index([user_id])
+  @@map("workspaces")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  role       String   // "user" | "assistant"
+  content    String
+  created_at DateTime @default(now())
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id, created_at])
+  @@index([user_id])
+  @@map("messages")
+}
+
+model File {
+  id            String   @id @default(uuid())
+  filename      String
+  original_name String
+  mimetype      String
+  size          Int
+  path          String
+  s3_key        String?
+  parsed_text   String?
+  created_at    DateTime @default(now())
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+
+  embeddings Embedding[]
+
+  @@index([workspace_id, created_at])
+  @@index([user_id])
+}
+
+model AIRequest {
+  id           String   @id @default(uuid())
+  prompt       String
+  response     String
+  model        String
+  latency_ms   Int
+  tokens_used  Int?
+  cost_usd     Float?
+  agent_type   String?
+  created_at   DateTime @default(now())
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+
+  workspace_id String?
+  workspace    Workspace? @relation(fields: [workspace_id], references: [id])
+
+  @@index([workspace_id, created_at])
+  @@index([user_id])
+}
+
+model Embedding {
+  id           String    @id @default(uuid())
+  content      String
+  vector       Json?
+  embedding    Unsupported("vector")?
+  file_id      String?
+  file         File?     @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  created_at   DateTime  @default(now())
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, created_at])
+  @@index([file_id])
+}
+
+model APIKey {
+  id          String   @id @default(uuid())
+  name        String
+  key_hash    String   @unique
+  last_used   DateTime?
+  created_at  DateTime @default(now())
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+}
+
+model Subscription {
+  id                 String   @id @default(uuid())
+  plan               Plan     @default(FREE)
+  token_limit        Int      @default(10000)
+  tokens_used        Int      @default(0)
+  stripe_customer_id String?
+  stripe_sub_id      String?
+  current_period_end DateTime?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id])
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  created_at  DateTime @default(now())
+
+  members         TeamMember[]
+  team_workspaces TeamWorkspace[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  role      TeamRole @default(VIEWER)
+  joined_at DateTime @default(now())
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+
+  team_id String
+  team    Team @relation(fields: [team_id], references: [id])
+
+  @@unique([user_id, team_id])
+  @@index([team_id])
+  @@index([user_id])
+}
+
+model TeamWorkspace {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
+  team_id String
+  team    Team @relation(fields: [team_id], references: [id])
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@unique([team_id, workspace_id])
+  @@index([workspace_id])
+}
+
+model PromptVersion {
+  id         String   @id @default(uuid())
+  version    Int
+  title      String
+  content    String
+  diff       String?
+  created_at DateTime @default(now())
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  user_id String
+  user    User @relation(fields: [user_id], references: [id])
+
+  @@unique([workspace_id, version])
+  @@map("prompt_versions")
+}
+
+enum TeamRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Workflow {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  isActive     Boolean  @default(false)
+  definition   Json     // { nodes: [...], edges: [...] }
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  user_id      String
+  user         User      @relation(fields: [user_id], references: [id])
+
+  runs         WorkflowRun[]
+
+  @@index([workspace_id, isActive])
+  @@index([user_id])
+  @@map("workflows")
+}
+
+enum WorkflowRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model WorkflowRun {
+  id             String            @id @default(uuid())
+  workflowId     String            @map("workflow_id")
+  workflow       Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workspaceId    String            @map("workspace_id")
+  workspace      Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  triggeredById  String?           @map("triggered_by_id")
+  triggeredBy    User?             @relation(fields: [triggeredById], references: [id], onDelete: SetNull)
+  status         WorkflowRunStatus @default(PENDING)
+  idempotencyKey String?           @map("idempotency_key")
+  startedAt      DateTime?         @map("started_at")
+  completedAt    DateTime?         @map("completed_at")
+  totalTokens    Int?              @map("total_tokens")
+  totalCostUsd   Float?            @map("total_cost_usd")
+  error          String?
+
+  // Legacy tracking fields preserved for backward compatibility
+  trigger        String?
+  latency_ms     Int?
+  logs           Json?
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  steps          RunStep[]
+  ledgers        CreditLedger[]
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, createdAt])
+  @@index([workflowId, status])
+  @@map("workflow_runs")
+}
+
+enum RunStepStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+model RunStep {
+  id               String        @id @default(uuid())
+  runId            String        @map("run_id")
+  run              WorkflowRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  nodeId           String        @map("node_id")
+  nodeType         String        @map("node_type")
+  status           RunStepStatus @default(PENDING)
+  inputJson        Json?         @map("input_json")
+  outputJson       Json?         @map("output_json")
+  attempt          Int           @default(1)
+  latencyMs        Int?          @map("latency_ms")
+  promptTokens     Int?          @map("prompt_tokens")
+  completionTokens Int?          @map("completion_tokens")
+  error            String?
+  startedAt        DateTime?     @map("started_at")
+  completedAt      DateTime?     @map("completed_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+
+  @@index([runId, nodeId])
+  @@index([runId, status])
+  @@map("run_steps")
+}
+
+enum LedgerType {
+  CREDIT
+  RESERVE
+  COMMIT
+  REFUND
+}
+
+model CreditLedger {
+  id          String       @id @default(uuid())
+  workspaceId String       @map("workspace_id")
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  runId       String?      @map("run_id")
+  run         WorkflowRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  type        LedgerType
+  amount      Int          // in credits/micro-units
+  referenceId String       @unique @map("reference_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  @@index([workspaceId, createdAt])
+  @@map("credit_ledgers")
+}
+
+enum WebhookProvider {
+  STRIPE
+  RAZORPAY
+}
+
+enum WebhookStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+}
+
+model WebhookEvent {
+  id              String          @id @default(uuid())
+  provider        WebhookProvider
+  externalEventId String          @unique @map("external_event_id")
+  status          WebhookStatus   @default(RECEIVED)
+  processedAt     DateTime?       @map("processed_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@map("webhook_events")
+}
+
+model Comment {
+  id           String   @id @default(uuid())
+  content      String
+  created_at   DateTime @default(now())
+
+  workspace_id String
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  user_id      String
+  user         User      @relation(fields: [user_id], references: [id])
+
+  @@map("comments")
+}
+
+model IntegrationCredential {
+  id             String    @id @default(uuid())
+  workspaceId    String    @map("workspace_id")
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  provider       String
+  label          String
+  encryptedValue String    @map("encrypted_value")
+  createdById    String?   @map("created_by_id")
+  createdBy      User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, provider, label])
+  @@index([workspaceId])
+  @@map("integration_credentials")
+}
