@@ -1,0 +1,19 @@
+{
+  "$schema": "https://saas-ui.dev/r/schema/components.json",
+  "system": "chakra",
+  "style": "default",
+  "rsc": false,
+  "tsx": true,
+  "installed": [
+    "button",
+    "provider"
+  ],
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks",
+    "icons": "@/components/icons"
+  }
+}
