@@ -27,6 +27,17 @@ export const SignIn = () => {
     try {
       const response = await api.post("/auth/login", { email, password });
       
+      // Purge any stale chat sessions, workspace IDs, or local message history from previous session
+      localStorage.removeItem("chat_sessions");
+      localStorage.removeItem("activeSessionId");
+      localStorage.removeItem("activeWorkspaceId");
+      localStorage.removeItem("cognify_agents");
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("messages_")) {
+          localStorage.removeItem(key);
+        }
+      });
+
       // Save token and user details in localStorage
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);

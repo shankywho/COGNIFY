@@ -42,7 +42,7 @@ const AGENTS = [
     name: "Code Agent",
     iconType: "code",
     successRate: 98.4,
-    requests: 1248,
+    requests: 0,
     description: "Backend engineering specialist for architecture, APIs, databases and production systems.",
     systemPrompt:
       "You are an elite software architect and code reviewer. Write concise, optimal, production-ready TS/Python/Go snippets. Always prioritize security, modularity, and error handling. Format code with inline comments. Refuse vague requests — ask for specifics.",
@@ -66,7 +66,7 @@ const AGENTS = [
     name: "Research Agent",
     iconType: "research",
     successRate: 96.8,
-    requests: 840,
+    requests: 0,
     description: "Deep research specialist for market analysis, literature review, and synthesis.",
     systemPrompt:
       "You are a meticulous research analyst. Synthesize information from multiple sources into clear, structured reports with citations, key metrics, and actionable insights. Always verify facts before presenting conclusions.",
@@ -90,7 +90,7 @@ const AGENTS = [
     name: "Business Agent",
     iconType: "business",
     successRate: 94.2,
-    requests: 682,
+    requests: 0,
     description: "Executive strategy specialist for financial models, reports, and forecasting.",
     systemPrompt:
       "You are a senior business strategist. Produce structured reports with executive summaries, financial breakdowns, and clear strategic recommendations. Use data-driven insights and present findings in concise, board-ready format.",
@@ -114,7 +114,7 @@ const AGENTS = [
     name: "Analytics Agent",
     iconType: "analytics",
     successRate: 97.1,
-    requests: 421,
+    requests: 0,
     description: "Data analysis specialist for metrics, visualization specs, and statistical inference.",
     systemPrompt:
       "You are a data analyst. Always respond with structured data, tables, and chart specifications. Break down complex datasets into clear visualizations and statistical summaries. Identify trends and anomalies with precision.",
@@ -138,7 +138,7 @@ const AGENTS = [
     name: "General Agent",
     iconType: "general",
     successRate: 91.5,
-    requests: 310,
+    requests: 0,
     description: "Generalist assistant for open-ended tasks, writing, and ideation.",
     systemPrompt:
       "You are a helpful general assistant. Adapt your tone and format to the user's needs. Handle a wide range of tasks from writing and editing to planning and brainstorming. Always be concise and actionable.",

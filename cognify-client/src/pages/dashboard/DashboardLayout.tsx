@@ -174,15 +174,10 @@ export const DashboardLayout = () => {
   const [sessions, setSessions] = useState<any[]>(() => {
     const saved = localStorage.getItem("chat_sessions");
     if (saved) return JSON.parse(saved);
-    return [
-      { id: "s1", title: "Refactor Database Indexes", agentType: "code", timestamp: "2 mins ago", lastMessage: "Implement Redis-backed rate limiter" },
-      { id: "s2", title: "Market Competitor Research", agentType: "research", timestamp: "1 hour ago", lastMessage: "Revenue projections look strong" },
-      { id: "s3", title: "Rate Limiter Implementation", agentType: "code", timestamp: "5 hrs ago", lastMessage: "Linear vs Notion comparison" },
-      { id: "s4", title: "Q3 Revenue Forecast", agentType: "business", timestamp: "1 day ago", lastMessage: "JWT validation strategy" },
-    ];
+    return [];
   });
   const [activeSessionId, setActiveSessionId] = useState(() => {
-    return localStorage.getItem("activeSessionId") || "s1";
+    return localStorage.getItem("activeSessionId") || "";
   });
 
   const navigationItems = [
@@ -191,15 +186,6 @@ export const DashboardLayout = () => {
     { name: "Agents", path: "/dashboard/agents", icon: Bot },
     { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
   ];
-
-  useEffect(() => {
-    if (!localStorage.getItem("chat_sessions")) {
-      localStorage.setItem("chat_sessions", JSON.stringify(sessions));
-    }
-    if (!localStorage.getItem("activeSessionId")) {
-      localStorage.setItem("activeSessionId", activeSessionId);
-    }
-  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -447,27 +433,31 @@ export const DashboardLayout = () => {
       {/* 4. Chat Sessions List */}
       <div className="flex-1 overflow-y-auto mt-4 pr-1 flex flex-col gap-1 scrollbar-none" style={{ minHeight: "150px" }}>
         <p className="text-[12px] font-bold text-[#F5F5F5] px-3 select-none mb-2 mt-1">Recents</p>
-        {sessions.map((s) => {
-          const isActive = s.id === activeSessionId && location.pathname === "/dashboard/chat";
-          return (
-            <div
-              key={s.id}
-              onClick={() => handleSelectSession(s.id)}
-              className={`relative flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all text-xs group ${isActive
-                ? "bg-[#2C2C2C] text-[#F5F5F5] font-medium"
-                : "text-[#8b8b8b] hover:bg-[#242424] hover:text-[#F5F5F5]"
-                }`}
-            >
-              <span className="truncate flex-1 pr-2">{s.title}</span>
-              <button
-                onClick={(e) => handleDeleteSession(s.id, e)}
-                className="shrink-0 p-0.5 rounded text-[#8b8b8b] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+        {sessions.length === 0 ? (
+          <p className="text-[11px] text-zinc-500 px-3 py-1 italic">No recent chats</p>
+        ) : (
+          sessions.map((s) => {
+            const isActive = s.id === activeSessionId && location.pathname === "/dashboard/chat";
+            return (
+              <div
+                key={s.id}
+                onClick={() => handleSelectSession(s.id)}
+                className={`relative flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all text-xs group ${isActive
+                  ? "bg-[#2C2C2C] text-[#F5F5F5] font-medium"
+                  : "text-[#8b8b8b] hover:bg-[#242424] hover:text-[#F5F5F5]"
+                  }`}
               >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        })}
+                <span className="truncate flex-1 pr-2">{s.title}</span>
+                <button
+                  onClick={(e) => handleDeleteSession(s.id, e)}
+                  className="shrink-0 p-0.5 rounded text-[#8b8b8b] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* 5. Menu Navigation */}
@@ -496,11 +486,11 @@ export const DashboardLayout = () => {
       <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.1)" }} className="mt-4 pt-3.5 flex flex-col gap-2 shrink-0">
         <div className="flex items-center gap-2.5 px-1.5">
           <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10 font-bold text-xs text-white select-none shrink-0">
-            {user?.name ? user.name.charAt(0).toUpperCase() : "S"}
+            {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="text-white text-xs font-semibold truncate leading-none mb-1 select-all">{user?.name || "shankar"}</span>
-            <span className="text-zinc-400 text-[10px] truncate leading-none select-all">{user?.email || "work.shankar70@gmail.com"}</span>
+            <span className="text-white text-xs font-semibold truncate leading-none mb-1 select-all">{user?.name || "User"}</span>
+            <span className="text-zinc-400 text-[10px] truncate leading-none select-all">{user?.email || ""}</span>
           </div>
         </div>
         <button

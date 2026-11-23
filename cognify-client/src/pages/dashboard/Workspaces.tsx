@@ -997,19 +997,11 @@ export const Workspaces = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {[
-                          { act: "File uploaded", actor: "Shankar H", res: "schema.pdf", time: "Jun 5, 14:32" },
-                          { act: "Agent config saved", actor: "Shankar H", res: "Code Agent", time: "Jun 5, 13:11" },
-                          { act: "Member invited", actor: "Shankar H", res: "priya@example.com", time: "Jun 4, 09:44" },
-                          { act: "Workspace created", actor: "Shankar H", res: "End Sem Project", time: "Jun 1, 10:00" }
-                        ].map((log, idx) => (
-                          <tr key={idx} className="border-b border-zinc-800/80 last:border-b-0 hover:bg-zinc-900/40 text-xs text-zinc-300 transition-colors">
-                            <td className="p-3.5 pl-5 font-medium text-white">{log.act}</td>
-                            <td className="p-3.5">{log.actor}</td>
-                            <td className="p-3.5 font-mono text-zinc-400">{log.res}</td>
-                            <td className="p-3.5 text-right pr-5 font-mono text-zinc-500">{log.time}</td>
-                          </tr>
-                        ))}
+                        <tr>
+                          <td colSpan={4} className="p-6 text-center text-xs text-zinc-500 font-mono">
+                            No activity logs recorded yet.
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>

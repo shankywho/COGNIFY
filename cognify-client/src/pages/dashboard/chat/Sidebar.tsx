@@ -225,8 +225,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               style={{ borderWidth: "0.5px" }}
             >
               <div className="px-2.5 py-2 border-b border-[var(--dash-border)]" style={{ borderWidth: "0 0 0.5px 0" }}>
-                <p className="text-xs font-bold text-[var(--dash-text)] leading-none truncate">{user?.name || "Shankar"}</p>
-                <p className="text-[10px] text-[var(--dash-muted)] mt-1 truncate">{user?.email || "work.shankar70@gmail.com"}</p>
+                <p className="text-xs font-bold text-[var(--dash-text)] leading-none truncate">{user?.name || "User"}</p>
+                <p className="text-[10px] text-[var(--dash-muted)] mt-1 truncate">{user?.email || ""}</p>
               </div>
               <div className="flex flex-col gap-0.5 mt-1">
                 <button
@@ -264,11 +264,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="flex items-center gap-2.5 overflow-hidden ring-0 group-hover:ring-1 ring-white/30 rounded-full px-0.5 transition-all">
             <div className="h-7 w-7 rounded-full bg-zinc-800 border border-white/20 flex items-center justify-center font-bold text-xs text-white shrink-0 font-mono">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : "SH"}
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : "U"}
             </div>
             <div className="flex flex-col overflow-hidden text-left">
               <span className="text-[var(--dash-text)] text-[13px] font-medium truncate leading-tight">
-                {user?.name || "Shankar"}
+                {user?.name || "User"}
               </span>
               <span className="text-[var(--dash-muted)] text-[11px] truncate leading-none mt-0.5">
                 Free Plan

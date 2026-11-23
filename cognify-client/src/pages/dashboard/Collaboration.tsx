@@ -53,9 +53,18 @@ export const Collaboration = () => {
     const text = replyText[commentId];
     if (!text || !text.trim()) return;
 
+    const storedUser = localStorage.getItem("user");
+    let currentUserName = "User";
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser);
+        if (u.name) currentUserName = u.name;
+      } catch {}
+    }
+
     const newReply = {
       id: `reply-${Date.now()}`,
-      user: { name: "Shankar H (you)" },
+      user: { name: `${currentUserName} (you)` },
       content: text,
       created_at: new Date().toISOString()
     };

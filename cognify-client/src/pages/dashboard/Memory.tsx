@@ -80,11 +80,7 @@ export const Memory = () => {
       setSearchResults(mapped);
     } catch (err) {
       console.error("Semantic search failed:", err);
-      // Simulated search results if vector DB call fails locally (e.g. pgvector missing on user db)
-      setSearchResults([
-        { id: "sim-1", content: `Rate limiting Express route setup using RedisStore connector for key '${queryText}'.`, created_at: new Date().toISOString(), similarity: 0.89 },
-        { id: "sim-2", content: `Subscription billing plan metadata matching PRO Plan value $79.00 USD.`, created_at: new Date().toISOString(), similarity: 0.76 }
-      ]);
+      setSearchResults([]);
     } finally {
       setSearchLoading(false);
     }

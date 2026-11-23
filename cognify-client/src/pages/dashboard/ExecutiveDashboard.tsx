@@ -29,7 +29,7 @@ import { api } from "../../utils/api";
 
 export const ExecutiveDashboard = () => {
   const navigate = useNavigate();
-  const [userName, setUserName] = useState("Shankar K.");
+  const [userName, setUserName] = useState("User");
   const [stats, setStats] = useState<any>(null);
   const [trends, setTrends] = useState<any[]>([]);
   const [agentBreakdown, setAgentBreakdown] = useState<any[]>([]);
@@ -100,51 +100,53 @@ export const ExecutiveDashboard = () => {
     return num.toLocaleString();
   };
 
-  const fallbackStats = {
-    totalRequests: 84200,
-    activeWorkspaces: 12,
-    tokensConsumed: 12450000,
-    costSavedUSD: 450.25,
-    monthlyUsage: "82%",
-    teamMembersCount: 3
-  };
-
-  const fallbackTrends = [
-    { date: "Mon", Requests: 12000 },
-    { date: "Tue", Requests: 19000 },
-    { date: "Wed", Requests: 15000 },
-    { date: "Thu", Requests: 22000 },
-    { date: "Fri", Requests: 18000 },
-    { date: "Sat", Requests: 9000 },
-    { date: "Sun", Requests: 11000 },
-  ];
-
-  const fallbackAgents = [
-    { name: "Support Agent", value: 45, count: 4500 },
-    { name: "Sales Agent", value: 30, count: 3000 },
-    { name: "Code Agent", value: 15, count: 1500 },
-    { name: "Custom Agent", value: 10, count: 1000 },
-  ];
-
-  const recentConversations = [
-    { id: "1", title: "API Integration Help", lastMessage: "How do I connect the Python SDK?", agentName: "Support Agent", workspace: "Backend Eng", timestamp: "2m ago" },
-    { id: "2", title: "Sales Lead Summary", lastMessage: "Summarize Acme Corp call", agentName: "Sales Agent", workspace: "Sales Team", timestamp: "1h ago" },
-    { id: "3", title: "UI Bug Fix", lastMessage: "Fix the padding on the modal", agentName: "Code Agent", workspace: "Frontend", timestamp: "3h ago" },
-  ];
-
   // Determine current active metrics
   const activeStats = {
-    totalRequests: stats?.totalRequests ?? fallbackStats.totalRequests,
-    activeWorkspaces: workspacesCount > 0 ? workspacesCount : fallbackStats.activeWorkspaces,
-    tokensConsumed: stats?.totalTokens ?? fallbackStats.tokensConsumed,
-    costSavedUSD: stats?.totalCostSaved ?? fallbackStats.costSavedUSD,
-    monthlyUsage: stats?.monthlyUsage ?? fallbackStats.monthlyUsage,
-    teamMembersCount: fallbackStats.teamMembersCount // Fallback for collaboration
+    totalRequests: stats?.totalRequests ?? stats?.total_requests ?? 0,
+    activeWorkspaces: workspacesCount,
+    tokensConsumed: stats?.totalTokens ?? stats?.total_tokens ?? 0,
+    costSavedUSD: stats?.totalCostSaved ?? stats?.total_cost_usd ?? 0,
+    monthlyUsage: stats?.monthlyUsage ?? "0%",
+    teamMembersCount: 1
   };
 
-  const chartTrends = trends.length > 0 ? trends : fallbackTrends;
-  const pieAgents = agentBreakdown.length > 0 ? agentBreakdown : fallbackAgents;
-  const totalRuns = stats?.totalRequests ?? 84200;
+  const chartTrends = trends.length > 0 ? trends : [
+    { date: "Mon", Requests: 0 },
+    { date: "Tue", Requests: 0 },
+    { date: "Wed", Requests: 0 },
+    { date: "Thu", Requests: 0 },
+    { date: "Fri", Requests: 0 },
+    { date: "Sat", Requests: 0 },
+    { date: "Sun", Requests: 0 },
+  ];
+
+  const pieAgents = agentBreakdown.length > 0 ? agentBreakdown : [
+    { name: "Code Agent", value: 0, count: 0 },
+    { name: "Research Agent", value: 0, count: 0 },
+    { name: "Business Agent", value: 0, count: 0 },
+    { name: "Analytics Agent", value: 0, count: 0 },
+    { name: "General Agent", value: 0, count: 0 },
+  ];
+
+  const totalRuns = stats?.totalRequests ?? stats?.total_requests ?? 0;
+
+  const recentConversations = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem("chat_sessions");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map((s: any) => ({
+          id: s.id,
+          title: s.title || "Chat",
+          lastMessage: s.lastMessage || "Conversation started",
+          agentName: s.agentType ? s.agentType.toUpperCase() + " Agent" : "General Agent",
+          workspace: "Personal Work",
+          timestamp: s.timestamp || "Recently"
+        }));
+      }
+    } catch {}
+    return [];
+  }, []);
 
   return (
     <div className="flex flex-col gap-6 select-none">
@@ -289,24 +291,30 @@ export const ExecutiveDashboard = () => {
               </button>
             </div>
             <div className="flex flex-col gap-2 mt-4">
-              {recentConversations.slice(0, 3).map((chat: any) => (
-                <div key={chat.id} onClick={() => navigate("/dashboard/chat")} className="flex items-start justify-between p-3 rounded-xl hover:bg-[#f9f9f9] cursor-pointer transition-all border border-transparent hover:border-[#eaedf1]">
-                  <div className="flex items-start gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-[rgba(241,116,99,0.08)] border border-[rgba(241,116,99,0.2)] flex items-center justify-center shrink-0">
-                      <MessageSquare className="h-4 w-4 text-[#f17463]" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-[#202020]">{chat.title}</span>
-                      <span className="block text-[10px] text-[#8b8b8b] mt-0.5 line-clamp-1 italic">"{chat.lastMessage}"</span>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-[9px] bg-[rgba(241,116,99,0.1)] text-[#f17463] border border-[rgba(241,116,99,0.2)] px-1.5 py-0.5 rounded-full font-semibold">{chat.agentName}</span>
-                        <span className="text-[9px] bg-[#f5f5f5] text-[#8b8b8b] px-1.5 py-0.5 rounded-full border border-[#eaedf1]">{chat.workspace}</span>
+              {recentConversations.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#8b8b8b] border border-dashed border-[#eaedf1] rounded-xl">
+                  No recent conversations yet. Start a new chat to see activity here.
+                </div>
+              ) : (
+                recentConversations.slice(0, 3).map((chat: any) => (
+                  <div key={chat.id} onClick={() => navigate("/dashboard/chat")} className="flex items-start justify-between p-3 rounded-xl hover:bg-[#f9f9f9] cursor-pointer transition-all border border-transparent hover:border-[#eaedf1]">
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-[rgba(241,116,99,0.08)] border border-[rgba(241,116,99,0.2)] flex items-center justify-center shrink-0">
+                        <MessageSquare className="h-4 w-4 text-[#f17463]" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-[#202020]">{chat.title}</span>
+                        <span className="block text-[10px] text-[#8b8b8b] mt-0.5 line-clamp-1 italic">"{chat.lastMessage}"</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-[9px] bg-[rgba(241,116,99,0.1)] text-[#f17463] border border-[rgba(241,116,99,0.2)] px-1.5 py-0.5 rounded-full font-semibold">{chat.agentName}</span>
+                          <span className="text-[9px] bg-[#f5f5f5] text-[#8b8b8b] px-1.5 py-0.5 rounded-full border border-[#eaedf1]">{chat.workspace}</span>
+                        </div>
                       </div>
                     </div>
+                    <span className="text-[10px] text-[#c0c0c0] shrink-0 mt-0.5">{chat.timestamp}</span>
                   </div>
-                  <span className="text-[10px] text-[#c0c0c0] shrink-0 mt-0.5">{chat.timestamp}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

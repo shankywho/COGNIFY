@@ -28,6 +28,17 @@ export const SignUp = () => {
     try {
       const response = await api.post("/auth/register", { name, email, password });
       
+      // Purge any stale chat sessions, workspace IDs, or local message history
+      localStorage.removeItem("chat_sessions");
+      localStorage.removeItem("activeSessionId");
+      localStorage.removeItem("activeWorkspaceId");
+      localStorage.removeItem("cognify_agents");
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("messages_")) {
+          localStorage.removeItem(key);
+        }
+      });
+
       // Save token and user details in localStorage
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);

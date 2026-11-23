@@ -72,10 +72,10 @@ export const Analytics = () => {
   }));
 
   const displayDonutData = donutData.length > 0 ? donutData : [
-    { name: "Code", value: 55, color: "#ffffff" },
-    { name: "Research", value: 20, color: "#d4d4d8" },
-    { name: "Business", value: 12, color: "#71717a" },
-    { name: "General", value: 5, color: "#52525b" }
+    { name: "Code", value: 0, color: "#ffffff" },
+    { name: "Research", value: 0, color: "#d4d4d8" },
+    { name: "Business", value: 0, color: "#71717a" },
+    { name: "General", value: 0, color: "#52525b" }
   ];
 
   const formatTrendDate = (dateStr: string) => {
@@ -95,13 +95,13 @@ export const Analytics = () => {
   }));
 
   const finalBarData = displayBarData.length > 0 ? displayBarData : [
-    { name: "Feb 03", code: 8, research: 6, business: 4, analytics: 3, general: 1 },
-    { name: "Feb 04", code: 7, research: 6, business: 6, analytics: 5, general: 2 },
-    { name: "Feb 05", code: 6, research: 6, business: 4, analytics: 3, general: 1 },
-    { name: "Feb 06", code: 7, research: 5, business: 5, analytics: 6, general: 2 },
-    { name: "Feb 07", code: 8, research: 6, business: 6, analytics: 5, general: 2 },
-    { name: "Feb 08", code: 6, research: 5, business: 5, analytics: 5, general: 1 },
-    { name: "Feb 09", code: 7, research: 6, business: 6, analytics: 6, general: 3 },
+    { name: "Mon", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
+    { name: "Tue", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
+    { name: "Wed", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
+    { name: "Thu", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
+    { name: "Fri", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
+    { name: "Sat", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
+    { name: "Sun", code: 0, research: 0, business: 0, analytics: 0, general: 0 },
   ];
 
   const formatModelName = (modelStr: string) => {
@@ -127,12 +127,7 @@ export const Analytics = () => {
     } catch { return "Recently"; }
   };
 
-  const displayRequests = stats?.recent_requests?.length > 0 ? stats.recent_requests : [
-    { id: "mock-1", agent_type: "code", model: "gpt-4o", latency_ms: 8200, created_at: new Date(Date.now() - 14 * 60 * 1000).toISOString(), status: "completed" },
-    { id: "mock-2", agent_type: "research", model: "claude-3-5", latency_ms: 11400, created_at: new Date(Date.now() - 32 * 60 * 1000).toISOString(), status: "running" },
-    { id: "mock-3", agent_type: "business", model: "llama-3.3-70b", latency_ms: 6700, created_at: new Date(Date.now() - 47 * 60 * 1000).toISOString(), status: "failed" },
-    { id: "mock-4", agent_type: "general", model: "gpt-4o-mini", latency_ms: 1200, created_at: new Date(Date.now() - 120 * 60 * 1000).toISOString(), status: "completed" },
-  ];
+  const displayRequests = stats?.recent_requests || [];
 
   return (
     <div className={isChatEmbedded
@@ -242,45 +237,53 @@ export const Analytics = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--dash-border)]">
-                {displayRequests.map((r: any) => (
-                  <tr key={r.id} className="hover:bg-[var(--dash-hover)] transition-colors group cursor-default">
-                    <td className="px-5 py-3.5 border-r border-[var(--dash-border)] font-medium text-[var(--dash-text)] capitalize">
-                      {r.agent_type ? `${r.agent_type} Agent` : "General Agent"}
-                    </td>
-                    <td className="px-5 py-3.5 border-r border-[var(--dash-border)]">
-                      <span className="px-2 py-0.5 rounded-[4px] border border-white/20 bg-white/5 text-white text-[10px] font-mono tracking-tight">
-                        {formatModelName(r.model)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 border-r border-[var(--dash-border)]">
-                      {r.status === 'running' && (
-                        <div className="flex items-center gap-1.5 text-white text-[11px] font-medium">
-                          <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> Running
-                        </div>
-                      )}
-                      {(r.status === 'completed' || !r.status) && (
-                        <div className="flex items-center gap-1.5 text-[#10B981] text-[11px] font-medium">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" /> Completed
-                        </div>
-                      )}
-                      {r.status === 'failed' && (
-                        <div className="flex items-center gap-1.5 text-[#EF4444] text-[11px] font-medium">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" /> Failed
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 border-r border-[var(--dash-border)] font-mono text-[11px] text-[var(--dash-text)] text-right">
-                      {r.status === 'running' ? (
-                        <span className="text-white">{(r.latency_ms / 1000).toFixed(1)}s</span>
-                      ) : (
-                        <span>{(r.latency_ms / 1000).toFixed(1)}s</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-[var(--dash-muted2)] text-[11px] text-right">
-                      {timeAgo(r.created_at)}
+                {displayRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-8 text-center text-xs text-[var(--dash-muted2)]">
+                      No requests recorded yet.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  displayRequests.map((r: any) => (
+                    <tr key={r.id} className="hover:bg-[var(--dash-hover)] transition-colors group cursor-default">
+                      <td className="px-5 py-3.5 border-r border-[var(--dash-border)] font-medium text-[var(--dash-text)] capitalize">
+                        {r.agent_type ? `${r.agent_type} Agent` : "General Agent"}
+                      </td>
+                      <td className="px-5 py-3.5 border-r border-[var(--dash-border)]">
+                        <span className="px-2 py-0.5 rounded-[4px] border border-white/20 bg-white/5 text-white text-[10px] font-mono tracking-tight">
+                          {formatModelName(r.model)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 border-r border-[var(--dash-border)]">
+                        {r.status === 'running' && (
+                          <div className="flex items-center gap-1.5 text-white text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> Running
+                          </div>
+                        )}
+                        {(r.status === 'completed' || !r.status) && (
+                          <div className="flex items-center gap-1.5 text-[#10B981] text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" /> Completed
+                          </div>
+                        )}
+                        {r.status === 'failed' && (
+                          <div className="flex items-center gap-1.5 text-[#EF4444] text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" /> Failed
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 border-r border-[var(--dash-border)] font-mono text-[11px] text-[var(--dash-text)] text-right">
+                        {r.status === 'running' ? (
+                          <span className="text-white">{(r.latency_ms / 1000).toFixed(1)}s</span>
+                        ) : (
+                          <span>{(r.latency_ms / 1000).toFixed(1)}s</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-[var(--dash-muted2)] text-[11px] text-right">
+                        {timeAgo(r.created_at)}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -313,7 +316,7 @@ export const Analytics = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-xl font-bold text-[var(--dash-text)]">{stats?.total_requests ?? 241}</span>
+                  <span className="text-xl font-bold text-[var(--dash-text)]">{stats?.total_requests ?? 0}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-2 justify-center text-[11px] font-medium text-[var(--dash-muted)] w-full pl-2">

@@ -27,66 +27,6 @@ interface Session {
   lastMessage: string;
 }
 
-const SEED_SESSIONS: Session[] = [
-  { id: "s1", title: "Express Rate Limiting", agentType: "code", timestamp: "2m ago", lastMessage: "Implement Redis-backed rate limiter" },
-  { id: "s2", title: "Market Analysis Q2", agentType: "business", timestamp: "1h ago", lastMessage: "Revenue projections look strong" },
-  { id: "s3", title: "Competitor Research", agentType: "research", timestamp: "3h ago", lastMessage: "Linear vs Notion comparison" },
-  { id: "s4", title: "Auth Middleware", agentType: "code", timestamp: "Yesterday", lastMessage: "JWT validation strategy" },
-];
-
-const SEED_MESSAGES: Message[] = [
-  {
-    id: "m1",
-    role: "user",
-    content: "Implement rate limiting for our Express API endpoints using Redis.",
-    timestamp: "10:30 AM",
-  },
-  {
-    id: "m2",
-    role: "assistant",
-    agentType: "code",
-    content: "Here's a production-ready rate limiter using `express-rate-limit` with a Redis store:\n\n" +
-      "```typescript\n" +
-      "import rateLimit from 'express-rate-limit';\n" +
-      "import RedisStore from 'rate-limit-redis';\n" +
-      "import { createClient } from 'redis';\n\n" +
-      "const redis = createClient({ url: process.env.REDIS_URL });\n" +
-      "await redis.connect();\n\n" +
-      "export const apiLimiter = rateLimit({\n" +
-      "  windowMs: 15 * 60 * 1000,  // 15 minutes\n" +
-      "  max: 100,\n" +
-      "  standardHeaders: true,\n" +
-      "  legacyHeaders: false,\n" +
-      "  store: new RedisStore({\n" +
-      "    sendCommand: (...args: string[]) => redis.sendCommand(args),\n" +
-      "  }),\n" +
-      "  handler: (req, res) => {\n" +
-      "    res.status(429).json({\n" +
-      "      error: 'Too many requests',\n" +
-      "      retryAfter: res.getHeader('Retry-After'),\n" +
-      "    });\n" +
-      "  },\n" +
-      "});\n" +
-      "```\n\n" +
-      "Apply to all routes:\n\n" +
-      "```typescript\n" +
-      "// server.ts\n" +
-      "app.use('/api/', apiLimiter);\n" +
-      "```\n\n" +
-      "For auth routes use a stricter limit:\n\n" +
-      "```typescript\n" +
-      "export const authLimiter = rateLimit({\n" +
-      "  windowMs: 60 * 60 * 1000,  // 1 hour\n" +
-      "  max: 10,\n" +
-      "  store: new RedisStore({ sendCommand: (...a) => redis.sendCommand(a) }),\n" +
-      "});\n\n" +
-      "app.use('/api/auth/', authLimiter);\n" +
-      "```",
-    timestamp: "10:31 AM",
-    followUps: ["Audit authController.ts schema", "Add per-user limits", "Show PM2 cluster config"],
-  },
-];
-
 const STREAM_RESPONSES: Record<AgentType, { content: string; followUps: string[] }> = {
   code: {
     content: "Here's a production-ready solution to rate limiting in Express using Redis:\n\n" +
@@ -135,17 +75,19 @@ export const AIChat = () => {
   const [sessions, setSessions] = useState<Session[]>(() => {
     const saved = localStorage.getItem("chat_sessions");
     if (saved) return JSON.parse(saved);
-    return SEED_SESSIONS;
+    return [];
   });
 
   const [activeSessionId, setActiveSessionId] = useState(() => {
-    return localStorage.getItem("activeSessionId") || "s1";
+    return localStorage.getItem("activeSessionId") || "";
   });
 
   const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem(`messages_${localStorage.getItem("activeSessionId") || "s1"}`);
+    const activeId = localStorage.getItem("activeSessionId") || "";
+    if (!activeId) return [];
+    const saved = localStorage.getItem(`messages_${activeId}`);
     if (saved) return JSON.parse(saved);
-    return (localStorage.getItem("activeSessionId") || "s1") === "s1" ? SEED_MESSAGES : [];
+    return [];
   });
 
   const [inputText, setInputText] = useState("");
@@ -282,7 +224,7 @@ export const AIChat = () => {
       if (saved) {
         setMessages(JSON.parse(saved));
       } else {
-        setMessages(newId === "s1" ? SEED_MESSAGES : []);
+        setMessages([]);
       }
     };
     window.addEventListener("activeSessionIdChanged", handleActiveSessionChanged);
@@ -326,7 +268,7 @@ export const AIChat = () => {
     localStorage.removeItem(`messages_${id}`);
 
     if (activeSessionId === id) {
-      const fallbackId = filtered.length > 0 ? filtered[0].id : "s1";
+      const fallbackId = filtered.length > 0 ? filtered[0].id : "";
       localStorage.setItem("activeSessionId", fallbackId);
       setActiveSessionId(fallbackId);
       window.dispatchEvent(new Event("activeSessionIdChanged"));

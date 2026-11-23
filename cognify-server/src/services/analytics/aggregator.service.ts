@@ -9,90 +9,11 @@ function p95(values: number[]): number {
   return sorted[idx] ?? sorted[sorted.length - 1];
 }
 
-async function autoSeedRequests(userId: string) {
-  const agentTypes = ["code", "research", "business", "analytics", "general"];
-  const models = ["llama-3.3-70b-versatile", "gpt-4o-mini", "gpt-4o", "llama-3.1-8b-instant"];
-  const prompts = [
-    "Implement rate limiting for our Express API endpoints using Redis.",
-    "Summarize the Q2 financial projections and SaaS growth vectors.",
-    "Compare React query states vs Redux cache invalidation models.",
-    "Examine index performance and latency breakdown on PostgreSQL logs.",
-    "Draft email response to customer complaining about trial subscription renewal.",
-    "Review authentication middleware for token expiry edge cases.",
-    "Write a marketing copy for the product launch of our autonomous AI team.",
-    "Generate usage metrics charts for active workspace nodes."
-  ];
-  const responses = [
-    "Here is the rate limiter setup code using express-rate-limit and redis...",
-    "The projections indicate 18.4% growth in our Pro Plan subscriptions with churn reduced by 12.5%...",
-    "React Query maintains client cache states with cacheTime, while Redux relies on store dispatching...",
-    "The analysis suggests adding compound indexes on user_id and created_at to reduce latency by 450ms...",
-    "Dear customer, thank you for reaching out. We have investigated the trial subscription payment...",
-    "To handle JWT token expiry safely, check the exp claim and verify with the public key...",
-    "Cognify is a next-generation AI operation platform that automates workflows with dedicated multi-agents...",
-    "We have compiled the requested usage metrics for your active workspace nodes: total requests are 128..."
-  ];
-
-  const now = new Date();
-  const seedRecords = [];
-
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(now.getDate() - i);
-    // Generate between 3 and 7 requests for each of the last 7 days
-    const numRequests = Math.floor(Math.random() * 5) + 3;
-    for (let r = 0; r < numRequests; r++) {
-      const pIdx = Math.floor(Math.random() * prompts.length);
-      const agentType = agentTypes[Math.floor(Math.random() * agentTypes.length)];
-      const model = models[Math.floor(Math.random() * models.length)];
-      const tokens = Math.floor(Math.random() * 1500) + 400;
-      const cost = calculateCost(tokens, model);
-      const latency = Math.floor(Math.random() * 8000) + 1200; // 1.2s - 9.2s
-
-      const recordDate = new Date(date);
-      recordDate.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60));
-
-      seedRecords.push({
-        prompt: prompts[pIdx],
-        response: responses[pIdx],
-        model,
-        latency_ms: latency,
-        tokens_used: tokens,
-        cost_usd: cost,
-        agent_type: agentType,
-        user_id: userId,
-        created_at: recordDate,
-      });
-    }
-  }
-
-  await prisma.aIRequest.createMany({
-    data: seedRecords.map(r => ({
-      prompt: r.prompt,
-      response: r.response,
-      model: r.model,
-      latency_ms: r.latency_ms,
-      tokens_used: r.tokens_used,
-      cost_usd: r.cost_usd,
-      agent_type: r.agent_type,
-      user_id: r.user_id,
-      created_at: r.created_at,
-    }))
-  });
-}
-
 export const aggregatorService = {
   async getOverview(userId: string) {
-    let requests = await prisma.aIRequest.findMany({
+    const requests = await prisma.aIRequest.findMany({
       where: { user_id: userId },
     });
-
-    if (requests.length === 0) {
-      await autoSeedRequests(userId);
-      requests = await prisma.aIRequest.findMany({
-        where: { user_id: userId },
-      });
-    }
 
     const totalRequests = requests.length;
     const totalTokens   = requests.reduce((s, r) => s + (r.tokens_used ?? 0), 0);
