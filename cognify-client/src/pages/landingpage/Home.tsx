@@ -115,13 +115,6 @@ function Hero() {
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
           {/* Hero Left Column */}
           <div className="lg:col-span-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/80 px-3 py-1 text-xs text-zinc-400 backdrop-blur-md mb-6 shadow-sm">
-              <span className="size-1.5 rounded-full bg-white animate-pulse" />
-              <span className="font-semibold text-white">v2.4</span>
-              <span className="text-zinc-600">|</span>
-              <span>Enterprise Multi-Agent Runtime & DAG Engine</span>
-            </div>
-
             <h1 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl leading-[1.06]">
               Orchestrate autonomous{" "}
               <span className="text-zinc-100 underline decoration-zinc-700 decoration-1 underline-offset-8">
