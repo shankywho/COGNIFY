@@ -5,6 +5,7 @@ import "lenis/dist/lenis.css";
 import {
   ArrowRight,
   Check,
+  Copy,
   Cpu,
   Database,
   FileCode,
@@ -19,6 +20,12 @@ import {
   Terminal,
   Workflow,
   Zap,
+  Menu,
+  X,
+  ExternalLink,
+  Code2,
+  Sliders,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Logo } from "@/components/logo";
@@ -39,6 +46,7 @@ export default function Home() {
       <div className="min-h-screen bg-black text-white selection:bg-white/20 selection:text-white antialiased">
         <Nav />
         <Hero />
+        <EcosystemTicker />
         <EngineeringInvariants />
         <ArchitectureSection />
         <FeatureMultiAgent />
@@ -54,13 +62,35 @@ export default function Home() {
 /* ----------------------------- NAV ----------------------------- */
 export function Nav() {
   const startHref = useAuthTarget();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Prevent background scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/85 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
         <div className="flex items-center gap-8">
           <Logo size={28} />
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
             {[
               { label: "Architecture", href: "#architecture" },
               { label: "Agents", href: "#agents" },
@@ -94,8 +124,71 @@ export function Nav() {
             Start Building
             <ArrowRight className="size-3.5 shrink-0 ml-1" />
           </Button>
+
+          {/* Mobile menu trigger */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex md:hidden p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 top-14 z-40 bg-black/95 backdrop-blur-2xl md:hidden border-b border-white/10">
+          <nav className="flex flex-col p-6 space-y-4 text-left" aria-label="Mobile">
+            {[
+              { label: "Architecture", href: "#architecture" },
+              { label: "Agents", href: "#agents" },
+              { label: "Vector Memory", href: "#memory" },
+              { label: "Observability", href: "#observability" },
+              { label: "Pricing Plans", href: "/pricing", isRoute: true },
+              { label: "About Cognify", href: "/about", isRoute: true },
+            ].map((item) => (
+              item.isRoute ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="text-base font-medium text-zinc-300 hover:text-white border-b border-white/5 pb-3 transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="text-base font-medium text-zinc-300 hover:text-white border-b border-white/5 pb-3 transition-colors"
+                >
+                  {item.label}
+                </a>
+              )
+            ))}
+            <div className="pt-4 flex flex-col gap-3">
+              <Link
+                to="/sign-in"
+                onClick={() => setMobileOpen(false)}
+                className="w-full py-2.5 rounded-xl border border-white/10 bg-zinc-900 text-center text-sm font-semibold text-white"
+              >
+                Sign In
+              </Link>
+              <Link
+                to={startHref}
+                onClick={() => setMobileOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-white text-center text-sm font-semibold !text-black shadow-sm"
+              >
+                Start Building Free →
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
@@ -103,6 +196,13 @@ export function Nav() {
 /* ----------------------------- HERO ----------------------------- */
 function Hero() {
   const startHref = useAuthTarget();
+  const [copiedQuickstart, setCopiedQuickstart] = useState(false);
+
+  const handleCopyQuickstart = () => {
+    navigator.clipboard.writeText("git clone https://github.com/shankywho/COGNIFY && npm run docker:up");
+    setCopiedQuickstart(true);
+    setTimeout(() => setCopiedQuickstart(false), 2500);
+  };
 
   return (
     <section className="relative overflow-hidden border-b border-white/10 bg-black pt-16 pb-20 md:pt-24 md:pb-28">
@@ -114,7 +214,7 @@ function Hero() {
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
           {/* Hero Left Column */}
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-6 text-left">
             <h1 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl leading-[1.06]">
               Orchestrate autonomous{" "}
               <span className="text-zinc-100 underline decoration-zinc-700 decoration-1 underline-offset-8">
@@ -143,8 +243,27 @@ function Hero() {
               </Button>
             </div>
 
+            {/* 1-Line Developer Quickstart */}
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-950/90 px-3.5 py-2 font-mono text-[11px] text-zinc-300 shadow-inner max-w-full overflow-hidden">
+                <Terminal className="size-3.5 text-zinc-500 shrink-0" />
+                <span className="truncate select-all text-zinc-300">
+                  git clone https://github.com/shankywho/COGNIFY && npm run docker:up
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyQuickstart}
+                  className="ml-1 text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0 p-1"
+                  title="Copy command"
+                  aria-label="Copy quickstart command"
+                >
+                  {copiedQuickstart ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+                </button>
+              </div>
+            </div>
+
             {/* Core Architectural Invariants */}
-            <div className="mt-10 grid grid-cols-2 gap-y-2.5 gap-x-4 text-[12px] font-mono text-zinc-400">
+            <div className="mt-9 grid grid-cols-2 gap-y-2.5 gap-x-4 text-[12px] font-mono text-zinc-400">
               <div className="flex items-center gap-2">
                 <Check className="size-3.5 text-white shrink-0" />
                 <span>Topological DAG Ordering</span>
@@ -174,6 +293,44 @@ function Hero() {
   );
 }
 
+/* ----------------------------- SUPPORTED ECOSYSTEM TICKER ----------------------------- */
+function EcosystemTicker() {
+  const items = [
+    { name: "Claude 3.5 Sonnet", type: "Anthropic LLM" },
+    { name: "GPT-4o & o1", type: "OpenAI LLM" },
+    { name: "Llama 3.3 70B", type: "Groq LPU" },
+    { name: "DeepSeek V3", type: "Reasoning LLM" },
+    { name: "pgvector 1536d", type: "Vector Memory" },
+    { name: "Redis 7 & BullMQ", type: "Distributed Queue" },
+    { name: "Docker & PM2", type: "Self-Hosted" },
+    { name: "Stripe & Razorpay", type: "Billing Webhooks" },
+  ];
+
+  return (
+    <div className="border-b border-white/10 bg-black/60 py-4 overflow-hidden">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-left">
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-zinc-400 shrink-0">
+            Runtime & Model Ecosystem
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {items.map((item) => (
+              <span
+                key={item.name}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono border border-white/10 bg-zinc-900/60 text-zinc-300 hover:border-white/20 transition-colors"
+              >
+                <span className="size-1.5 rounded-full bg-white/60" />
+                <span className="text-white font-medium">{item.name}</span>
+                <span className="text-zinc-500 text-[10px]">({item.type})</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ----------------------------- WORKFLOW VISUAL ----------------------------- */
 const SEEDED_WORKFLOWS = [
   {
@@ -181,10 +338,10 @@ const SEEDED_WORKFLOWS = [
     label: "Support Triage",
     file: "workspace / support-triage-mesh.dag",
     nodes: [
-      { id: "trigger", x: "20px", y: "40px", kind: "Trigger", name: "Inbound Webhook", latency: "8ms" },
-      { id: "classifier", x: "190px", y: "130px", kind: "Agent", name: "Intent Classifier", latency: "142ms" },
-      { id: "memory", x: "370px", y: "40px", kind: "Memory", name: "Hybrid RAG Search", latency: "38ms" },
-      { id: "action", x: "370px", y: "210px", kind: "Action", name: "Action Executor", latency: "214ms" },
+      { id: "trigger", x: "18px", y: "35px", kind: "Trigger", name: "Inbound Webhook", latency: "8ms" },
+      { id: "classifier", x: "170px", y: "115px", kind: "Agent", name: "Intent Classifier", latency: "142ms" },
+      { id: "memory", x: "330px", y: "35px", kind: "Memory", name: "Hybrid RAG Search", latency: "38ms" },
+      { id: "action", x: "330px", y: "195px", kind: "Action", name: "Action Executor", latency: "214ms" },
     ],
     logs: [
       { t: "14:20:01.102", k: "TRIGGER", v: "> incoming support ticket #4819" },
@@ -199,10 +356,10 @@ const SEEDED_WORKFLOWS = [
     label: "Grounded RAG",
     file: "workspace / grounded-rag-pipeline.dag",
     nodes: [
-      { id: "trigger", x: "20px", y: "40px", kind: "Trigger", name: "Doc Ingest Event", latency: "4ms" },
-      { id: "classifier", x: "190px", y: "130px", kind: "Transform", name: "Semantic Chunker", latency: "88ms" },
-      { id: "memory", x: "370px", y: "40px", kind: "Embed", name: "pgvector 1536d", latency: "164ms" },
-      { id: "action", x: "370px", y: "210px", kind: "Store", name: "HNSW Knowledge Index", latency: "52ms" },
+      { id: "trigger", x: "18px", y: "35px", kind: "Trigger", name: "Doc Ingest Event", latency: "4ms" },
+      { id: "classifier", x: "170px", y: "115px", kind: "Transform", name: "Semantic Chunker", latency: "88ms" },
+      { id: "memory", x: "330px", y: "35px", kind: "Embed", name: "pgvector 1536d", latency: "164ms" },
+      { id: "action", x: "330px", y: "195px", kind: "Store", name: "HNSW Knowledge Index", latency: "52ms" },
     ],
     logs: [
       { t: "10:14:02.010", k: "TRIGGER", v: "> s3://docs/q4_architecture.pdf detected" },
@@ -217,10 +374,10 @@ const SEEDED_WORKFLOWS = [
     label: "PR Reviewer",
     file: "workspace / automated-code-pr-reviewer.dag",
     nodes: [
-      { id: "trigger", x: "20px", y: "40px", kind: "Trigger", name: "GitHub Webhook", latency: "12ms" },
-      { id: "classifier", x: "190px", y: "130px", kind: "Agent", name: "AST Diff Extractor", latency: "96ms" },
-      { id: "memory", x: "370px", y: "40px", kind: "Security", name: "Circuit Breaker Linter", latency: "74ms" },
-      { id: "action", x: "370px", y: "210px", kind: "Dispatch", name: "PR Comment Dispatch", latency: "182ms" },
+      { id: "trigger", x: "18px", y: "35px", kind: "Trigger", name: "GitHub Webhook", latency: "12ms" },
+      { id: "classifier", x: "170px", y: "115px", kind: "Agent", name: "AST Diff Extractor", latency: "96ms" },
+      { id: "memory", x: "330px", y: "35px", kind: "Security", name: "Circuit Breaker Linter", latency: "74ms" },
+      { id: "action", x: "330px", y: "195px", kind: "Dispatch", name: "PR Comment Dispatch", latency: "182ms" },
     ],
     logs: [
       { t: "16:45:10.012", k: "TRIGGER", v: "> pull_request.opened #142 (repo: core-api)" },
@@ -245,7 +402,7 @@ function WorkflowVisual() {
     setIsSimulating(true);
     setActiveStep(0);
 
-    const stepDuration = 280;
+    const stepDuration = 320;
     setTimeout(() => setActiveStep(1), stepDuration);
     setTimeout(() => setActiveStep(2), stepDuration * 2);
     setTimeout(() => setActiveStep(3), stepDuration * 3);
@@ -311,7 +468,7 @@ function WorkflowVisual() {
           {isSimulating ? (
             <>
               <RotateCw className="size-3 animate-spin text-white" />
-              <span>Running...</span>
+              <span>Simulating...</span>
             </>
           ) : (
             <>
@@ -322,54 +479,78 @@ function WorkflowVisual() {
         </button>
       </div>
 
-      {/* Interactive Visual Canvas */}
-      <div className="relative h-[320px] grid-bg overflow-hidden bg-black/60">
-        {/* SVG Bezier Curves */}
-        <svg className="absolute inset-0 size-full pointer-events-none">
-          <path
-            d="M 120 70 C 150 70, 160 160, 190 160"
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.25)"
-            strokeWidth="1.5"
-            strokeDasharray={isSimulating ? "4 4" : undefined}
-            className={isSimulating ? "animate-pulse" : ""}
-          />
-          <path
-            d="M 290 160 C 330 160, 330 70, 370 70"
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.25)"
-            strokeWidth="1.5"
-            strokeDasharray={isSimulating ? "4 4" : undefined}
-            className={isSimulating ? "animate-pulse" : ""}
-          />
-          <path
-            d="M 290 160 C 330 160, 330 240, 370 240"
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.25)"
-            strokeWidth="1.5"
-            strokeDasharray={isSimulating ? "4 4" : undefined}
-            className={isSimulating ? "animate-pulse" : ""}
-          />
-        </svg>
+      {/* Interactive Visual Canvas with Responsive Wrapper */}
+      <div className="relative h-[290px] grid-bg overflow-x-auto overflow-y-hidden bg-black/60 scrollbar-none">
+        <div className="relative w-[480px] sm:w-full h-full">
+          {/* SVG Bezier Curves with Animated Flow */}
+          <svg className="absolute inset-0 size-full pointer-events-none" viewBox="0 0 480 280">
+            <defs>
+              <filter id="beamGlow">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
 
-        {/* Nodes */}
-        {currentWf.nodes.map((node, i) => {
-          let status: "pending" | "busy" | "done" = "pending";
-          if (activeStep > i) status = "done";
-          else if (activeStep === i && isSimulating) status = "busy";
-          else if (activeStep === 4) status = "done";
-
-          return (
-            <Node
-              key={`${currentWf.id}-${node.id}`}
-              style={{ left: node.x, top: node.y }}
-              kind={node.kind}
-              name={node.name}
-              latency={status === "done" ? node.latency : undefined}
-              status={status}
+            {/* Base wires */}
+            <path
+              d="M 120 65 C 145 65, 150 145, 175 145"
+              fill="none"
+              stroke={activeStep >= 1 ? "rgba(255, 255, 255, 0.45)" : "rgba(255, 255, 255, 0.15)"}
+              strokeWidth="1.5"
             />
-          );
-        })}
+            <path
+              d="M 270 145 C 295 145, 305 65, 330 65"
+              fill="none"
+              stroke={activeStep >= 2 ? "rgba(255, 255, 255, 0.45)" : "rgba(255, 255, 255, 0.15)"}
+              strokeWidth="1.5"
+            />
+            <path
+              d="M 270 145 C 295 145, 305 225, 330 225"
+              fill="none"
+              stroke={activeStep >= 3 ? "rgba(255, 255, 255, 0.45)" : "rgba(255, 255, 255, 0.15)"}
+              strokeWidth="1.5"
+            />
+
+            {/* Animated Energy Flow Beams */}
+            {isSimulating && activeStep === 1 && (
+              <circle r="3.5" fill="#ffffff" filter="url(#beamGlow)">
+                <animateMotion dur="0.32s" repeatCount="1" path="M 120 65 C 145 65, 150 145, 175 145" />
+              </circle>
+            )}
+            {isSimulating && (activeStep === 2 || activeStep === 3) && (
+              <>
+                <circle r="3.5" fill="#ffffff" filter="url(#beamGlow)">
+                  <animateMotion dur="0.32s" repeatCount="1" path="M 270 145 C 295 145, 305 65, 330 65" />
+                </circle>
+                <circle r="3.5" fill="#ffffff" filter="url(#beamGlow)">
+                  <animateMotion dur="0.32s" repeatCount="1" path="M 270 145 C 295 145, 305 225, 330 225" />
+                </circle>
+              </>
+            )}
+          </svg>
+
+          {/* Nodes */}
+          {currentWf.nodes.map((node, i) => {
+            let status: "pending" | "busy" | "done" = "pending";
+            if (activeStep > i) status = "done";
+            else if (activeStep === i && isSimulating) status = "busy";
+            else if (activeStep === 4) status = "done";
+
+            return (
+              <Node
+                key={`${currentWf.id}-${node.id}`}
+                style={{ left: node.x, top: node.y }}
+                kind={node.kind}
+                name={node.name}
+                latency={status === "done" ? node.latency : undefined}
+                status={status}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Mini Streaming Logs Footer */}
@@ -408,7 +589,7 @@ function Node({
   return (
     <div
       style={style}
-      className={`absolute w-36 rounded-xl border p-2.5 transition-all shadow-lg text-left ${
+      className={`absolute w-32 rounded-xl border p-2 transition-all shadow-lg text-left ${
         status === "busy"
           ? "border-white bg-white/15 ring-2 ring-white/50 animate-pulse"
           : status === "done"
@@ -443,7 +624,7 @@ function Node({
           {status === "done" ? latency || "DONE" : status}
         </span>
       </div>
-      <div className="mt-1.5 text-[11px] font-semibold text-white tracking-tight truncate">
+      <div className="mt-1 text-[11px] font-semibold text-white tracking-tight truncate">
         {name}
       </div>
     </div>
@@ -453,12 +634,12 @@ function Node({
 /* ----------------------------- ENGINEERING INVARIANTS STRIP ----------------------------- */
 function EngineeringInvariants() {
   const metrics = [
-    { label: "CI Automated Tests", value: "35 / 35", sub: "Deterministic Pass" },
-    { label: "Atomic Credit Lock", value: "O(1)", sub: "Redis Monotonic INCR" },
-    { label: "Hybrid RRF Fusion", value: "k = 60", sub: "pgvector + tsvector" },
-    { label: "Secret Vault", value: "AES-256-GCM", sub: "Unique 12-Byte IV" },
-    { label: "Queue Load Shedding", value: "HTTP 503", sub: "Backpressure Active" },
-    { label: "Seeded Golden DAGs", value: "3", sub: "Production Blueprints" },
+    { label: "Sub-Second P95", value: "< 45ms", sub: "Groq LPU + Redis Cache" },
+    { label: "Token Savings", value: "75%+", sub: "Step-Level Replay HIT" },
+    { label: "Vector Precision", value: "1536-dim", sub: "pgvector HNSW + RRF" },
+    { label: "Atomic Balance Lock", value: "O(1)", sub: "Zero Row Contention" },
+    { label: "Breaker Recovery", value: "99.9%", sub: "Automatic 429 Failover" },
+    { label: "Production Blueprints", value: "3", sub: "Seeded Golden DAGs" },
   ];
 
   return (
@@ -604,12 +785,56 @@ function SectionHeader({
 
 /* ----------------------------- FEATURE MULTI-AGENT ----------------------------- */
 function FeatureMultiAgent() {
-  const [agents] = useState([
-    { name: "Code Reviewer", model: "claude-3.5-sonnet", task: "PR AST Analysis", latency: "1.4s", load: 68 },
-    { name: "RAG Synthesizer", model: "gpt-4o", task: "Dense RRF Fusion", latency: "840ms", load: 52 },
-    { name: "Triage Classifier", model: "groq-llama-3.3", task: "Intent Matching", latency: "48ms", load: 24 },
-    { name: "Security Boundary", model: "mesh-guard", task: "Injection Defense", latency: "14ms", load: 12 },
-  ]);
+  const [selectedAgentIdx, setSelectedAgentIdx] = useState(0);
+
+  const agents = [
+    {
+      name: "Code Reviewer",
+      model: "claude-3.5-sonnet",
+      task: "PR AST Analysis",
+      latency: "1.4s",
+      load: 68,
+      prompt: "Extract AST diffs, detect memory leaks and race conditions, and generate inline GitHub comments with verified fix patches.",
+      tools: ["AST Diff Parser", "Git PR Webhook", "Linter Validator"],
+      temperature: 0.2,
+      maxTokens: 4096,
+    },
+    {
+      name: "RAG Synthesizer",
+      model: "gpt-4o",
+      task: "Dense RRF Fusion",
+      latency: "840ms",
+      load: 52,
+      prompt: "Execute Reciprocal Rank Fusion on pgvector embeddings and full-text keywords. Ground responses with strict source citations.",
+      tools: ["pgvector 1536d", "BM25 TsVector", "Source Grounding"],
+      temperature: 0.3,
+      maxTokens: 2048,
+    },
+    {
+      name: "Triage Classifier",
+      model: "groq-llama-3.3",
+      task: "Intent Matching",
+      latency: "48ms",
+      load: 24,
+      prompt: "Classify incoming payload intent into billing dispute, technical outage, or tier upgrade within 50ms sub-second bounds.",
+      tools: ["Sub-50ms Inference", "JSON Schema Output", "Webhook Router"],
+      temperature: 0.1,
+      maxTokens: 512,
+    },
+    {
+      name: "Security Boundary",
+      model: "mesh-guard",
+      task: "Injection Defense",
+      latency: "14ms",
+      load: 12,
+      prompt: "Detect prompt injection boundaries, strip malicious XML delimiter tags, and enforce AES-256-GCM credential envelope checks.",
+      tools: ["Prompt Shield", "XML Strip Filter", "AES-256-GCM Vault"],
+      temperature: 0.0,
+      maxTokens: 256,
+    },
+  ];
+
+  const currentAgent = agents[selectedAgentIdx];
 
   return (
     <section className="border-b border-white/10 bg-black py-20" id="agents">
@@ -637,38 +862,74 @@ function FeatureMultiAgent() {
                 <Layers className="size-3.5 text-white" />
                 <span>agent.registry · 4 active worker pods</span>
               </div>
-              <span className="font-mono text-[10px] text-zinc-500 uppercase">BullMQ Pools Active</span>
+              <span className="font-mono text-[10px] text-zinc-500 uppercase">Click Agent To Inspect</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {agents.map((a) => (
-                <div
-                  key={a.name}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5 transition-all hover:border-zinc-700"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="text-[13px] font-semibold text-white">{a.name}</div>
-                      <div className="font-mono text-[10px] text-zinc-400">{a.model}</div>
+            {/* 4 Agent Selectable Cards */}
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              {agents.map((a, idx) => {
+                const isSelected = selectedAgentIdx === idx;
+                return (
+                  <button
+                    key={a.name}
+                    type="button"
+                    onClick={() => setSelectedAgentIdx(idx)}
+                    className={`rounded-xl border p-3.5 transition-all text-left cursor-pointer ${
+                      isSelected
+                        ? "border-white bg-zinc-900/90 shadow-md ring-1 ring-white/20"
+                        : "border-zinc-800 bg-zinc-900/40 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-[13px] font-semibold text-white">{a.name}</div>
+                        <div className="font-mono text-[10px] text-zinc-400">{a.model}</div>
+                      </div>
+                      <span className={`font-mono text-[8.5px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                        isSelected
+                          ? "border-white bg-white !text-black font-semibold"
+                          : "border-white/20 bg-white/5 text-zinc-300"
+                      }`}>
+                        {isSelected ? "selected" : "active"}
+                      </span>
                     </div>
-                    <span className="font-mono text-[8.5px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-white/20 bg-white/5 text-zinc-200">
-                      active
-                    </span>
-                  </div>
 
-                  <div className="mt-3 flex justify-between font-mono text-[10px] text-zinc-400 border-t border-zinc-800/60 pt-2">
-                    <span>Task: <span className="text-zinc-200">{a.task}</span></span>
-                    <span>{a.latency}</span>
-                  </div>
+                    <div className="mt-2.5 flex justify-between font-mono text-[10px] text-zinc-400 border-t border-zinc-800/60 pt-2">
+                      <span>Task: <span className="text-zinc-200">{a.task}</span></span>
+                      <span>{a.latency}</span>
+                    </div>
 
-                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-white transition-all duration-700"
-                      style={{ width: `${a.load}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                    <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-zinc-800">
+                      <div
+                        className="h-full bg-white transition-all duration-500"
+                        style={{ width: `${a.load}%` }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Dynamic Agent Runtime Inspector Panel */}
+            <div className="mt-3.5 p-3.5 rounded-xl border border-white/10 bg-black/60 font-mono text-[11px]">
+              <div className="flex items-center justify-between text-zinc-400 pb-2 border-b border-zinc-800 text-[10px] uppercase tracking-wider">
+                <span className="flex items-center gap-1.5 text-white font-semibold">
+                  <Sliders className="size-3 text-zinc-400" />
+                  {currentAgent.name} Runtime Persona
+                </span>
+                <span>Temp: {currentAgent.temperature} · MaxTokens: {currentAgent.maxTokens}</span>
+              </div>
+              <p className="mt-2 text-zinc-300 text-[11.5px] font-sans leading-relaxed">
+                "{currentAgent.prompt}"
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {currentAgent.tools.map((t) => (
+                  <span key={t} className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-300 inline-flex items-center gap-1">
+                    <CheckCircle2 className="size-2.5 text-emerald-400" />
+                    {t}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -679,11 +940,41 @@ function FeatureMultiAgent() {
 
 /* ----------------------------- FEATURE MEMORY ----------------------------- */
 function FeatureMemory() {
-  const results = [
-    { title: "enterprise_refund_policy_v2.md", score: "0.96", type: "Cosine <=> RRF" },
-    { title: "idempotency_key_settlement_flow.ts", score: "0.92", type: "BM25 Lexical" },
-    { title: "workspace_rbac_audit_trail.sql", score: "0.88", type: "Hybrid Rank" },
+  const MEMORY_QUERIES = [
+    {
+      id: "refund",
+      query: "refund_idempotency_keys",
+      label: "Refund Policy & Idempotency",
+      results: [
+        { title: "enterprise_refund_policy_v2.md", score: "0.96", type: "Cosine <=> RRF", match: "Matches: refund clause, dispute window, and webhook settlement." },
+        { title: "idempotency_key_settlement_flow.ts", score: "0.93", type: "BM25 Lexical", match: "Matches: Redis idempotency key settlement and token ledger." },
+        { title: "workspace_rbac_audit_trail.sql", score: "0.89", type: "Hybrid Rank", match: "Matches: tenant isolation WHERE workspace_id check." },
+      ]
+    },
+    {
+      id: "auth",
+      query: "jwt_token_expiry_validation",
+      label: "JWT Auth & Edge Verification",
+      results: [
+        { title: "auth_jwt_validator_middleware.ts", score: "0.98", type: "Cosine <=> RRF", match: "Matches: RSA-256 verify, exp claim validation, clock skew." },
+        { title: "redis_session_revocation_store.ts", score: "0.94", type: "BM25 Lexical", match: "Matches: instant session invalidation blacklist." },
+        { title: "rate_limiter_auth_endpoints.ts", score: "0.88", type: "Hybrid Rank", match: "Matches: sliding window rate limiter for login routes." },
+      ]
+    },
+    {
+      id: "ratelimit",
+      query: "redis_sliding_window_limiter",
+      label: "Sliding Window Rate Limiter",
+      results: [
+        { title: "rate_limit_redis_sliding_window.ts", score: "0.97", type: "Cosine <=> RRF", match: "Matches: ZREMRANGEBYSCORE + ZADD atomic pipeline." },
+        { title: "token_bucket_backpressure_queue.ts", score: "0.91", type: "BM25 Lexical", match: "Matches: BullMQ queue pause on 503 backpressure." },
+        { title: "api_gateway_throttle_policy.yaml", score: "0.86", type: "Hybrid Rank", match: "Matches: per-workspace tier quota boundaries." },
+      ]
+    }
   ];
+
+  const [activeQueryIdx, setActiveQueryIdx] = useState(0);
+  const currentQueryData = MEMORY_QUERIES[activeQueryIdx];
 
   return (
     <section className="border-b border-white/10 bg-zinc-950/60 py-20" id="memory">
@@ -706,27 +997,50 @@ function FeatureMemory() {
 
         <div className="lg:order-1 lg:col-span-7">
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-black p-5 shadow-2xl text-left">
+            {/* Interactive Query Selector Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-3.5 pb-3 border-b border-zinc-800">
+              <span className="font-mono text-[10px] text-zinc-400 uppercase tracking-wider mr-1">
+                Sample Query:
+              </span>
+              {MEMORY_QUERIES.map((q, idx) => (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => setActiveQueryIdx(idx)}
+                  className={`px-2.5 py-1 rounded-md font-mono text-[10.5px] transition-all cursor-pointer ${
+                    activeQueryIdx === idx
+                      ? "bg-white !text-black font-semibold shadow-xs"
+                      : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                  }`}
+                >
+                  {q.label}
+                </button>
+              ))}
+            </div>
+
+            {/* SQL Terminal Box */}
             <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-              <Search className="size-4 text-white" />
-              <div className="font-mono text-[11.5px] text-zinc-200">
-                <span className="text-zinc-500">SELECT * FROM</span> vector_memory(query=&apos;refund_idempotency&apos;)
+              <Search className="size-4 text-white shrink-0" />
+              <div className="font-mono text-[11px] sm:text-[11.5px] text-zinc-200 truncate">
+                <span className="text-zinc-500">SELECT * FROM</span> vector_memory(query=&apos;{currentQueryData.query}&apos;)
               </div>
             </div>
 
+            {/* Ranked Results List */}
             <div className="mt-3.5 space-y-2">
-              {results.map((r) => (
+              {currentQueryData.results.map((r) => (
                 <div
                   key={r.title}
                   className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition-colors hover:border-zinc-700"
                 >
-                  <div className="flex items-center gap-3">
-                    <Database className="size-4 text-zinc-400" />
-                    <div>
-                      <div className="text-[12.5px] font-medium text-white">{r.title}</div>
-                      <div className="font-mono text-[9.5px] text-zinc-500">{r.type}</div>
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <Database className="size-4 text-zinc-400 shrink-0" />
+                    <div className="overflow-hidden">
+                      <div className="text-[12.5px] font-medium text-white truncate">{r.title}</div>
+                      <div className="font-mono text-[9.5px] text-zinc-400 truncate">{r.match}</div>
                     </div>
                   </div>
-                  <div className="font-mono text-[10.5px] font-semibold text-white rounded bg-zinc-800 px-2 py-0.5">
+                  <div className="font-mono text-[10.5px] font-semibold text-white rounded bg-zinc-800 px-2 py-0.5 shrink-0 ml-2">
                     {r.score}
                   </div>
                 </div>
@@ -748,6 +1062,7 @@ function FeatureMemory() {
 /* ----------------------------- FEATURE MONITORING & DEVELOPER SDK ----------------------------- */
 function FeatureMonitoring() {
   const [activeTab, setActiveTab] = useState<"trace" | "sdk">("trace");
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const steps = [
     { name: "Trigger Check", duration: "0ms", state: "CACHED" },
@@ -756,6 +1071,23 @@ function FeatureMonitoring() {
     { name: "LLM Primary (Groq)", duration: "488ms", state: "200 OK" },
     { name: "Action Webhook Dispatch", duration: "104ms", state: "200 OK" },
   ];
+
+  const handleCopyCode = () => {
+    const rawCode = `import { defineWorkflow, agentNode, memoryNode, actionNode } from "@cognify/sdk";
+
+export default defineWorkflow({
+  id: "support-triage-mesh",
+  circuitBreaker: { maxRetries: 3, timeoutMs: 5000 },
+  nodes: [
+    agentNode("intent", { model: "groq/llama-3.3", replayCache: true }),
+    memoryNode("rag", { algorithm: "RRF(k=60)", tenantIsolation: true }),
+    actionNode("dispatch", { channel: "escalations", idempotent: true }),
+  ],
+});`;
+    navigator.clipboard.writeText(rawCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
   return (
     <section className="border-b border-white/10 bg-black py-20" id="observability">
@@ -809,7 +1141,20 @@ function FeatureMonitoring() {
                   </span>
                 </button>
               </div>
-              <span className="font-mono text-[10.5px] text-zinc-400">Total: 604ms</span>
+
+              {activeTab === "sdk" ? (
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-white/10 bg-white/5 hover:bg-white/10 text-[10.5px] font-mono text-zinc-300 transition-colors cursor-pointer"
+                  title="Copy code"
+                >
+                  {copiedCode ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
+                  <span>{copiedCode ? "Copied" : "Copy"}</span>
+                </button>
+              ) : (
+                <span className="font-mono text-[10.5px] text-zinc-400">Total: 604ms</span>
+              )}
             </div>
 
             {activeTab === "trace" ? (
@@ -839,26 +1184,36 @@ function FeatureMonitoring() {
                 ))}
               </div>
             ) : (
-              <div className="mt-3.5 p-3 rounded-lg border border-zinc-800 bg-zinc-900/40 font-mono text-[11px] leading-relaxed text-zinc-300 overflow-x-auto">
-                <span className="text-zinc-500">// TypeScript DAG Pipeline definition</span>
-                <br />
-                <span className="text-zinc-400">export default</span> defineWorkflow({"{"}
-                <br />
-                {"  "}id: <span className="text-zinc-200">&apos;support-triage-mesh&apos;</span>,
-                <br />
-                {"  "}circuitBreaker: {"{"} maxRetries: <span className="text-white">3</span>, timeoutMs: <span className="text-white">5000</span> {"}"},
-                <br />
-                {"  "}nodes: [
-                <br />
-                {"    "}agentNode(<span className="text-zinc-200">&apos;intent&apos;</span>, {"{"} model: <span className="text-zinc-200">&apos;groq/llama-3.3&apos;</span>, replayCache: <span className="text-white">true</span> {"}"}),
-                <br />
-                {"    "}memoryNode(<span className="text-zinc-200">&apos;rag&apos;</span>, {"{"} algorithm: <span className="text-zinc-200">&apos;RRF(k=60)&apos;</span>, tenantIsolation: <span className="text-white">true</span> {"}"}),
-                <br />
-                {"    "}actionNode(<span className="text-zinc-200">&apos;dispatch&apos;</span>, {"{"} channel: <span className="text-zinc-200">&apos;escalations&apos;</span>, idempotent: <span className="text-white">true</span> {"}"}),
-                <br />
-                {"  "}],
-                <br />
-                {"}"});
+              /* High-contrast syntax-highlighted code block */
+              <div className="mt-3.5 p-4 rounded-xl border border-zinc-800 bg-black font-mono text-[11px] leading-relaxed overflow-x-auto text-left">
+                <div className="text-zinc-500">// TypeScript DAG Pipeline definition</div>
+                <div>
+                  <span className="text-purple-400">export default</span> <span className="text-sky-300">defineWorkflow</span>(&#123;
+                </div>
+                <div className="pl-4">
+                  id: <span className="text-emerald-300">"support-triage-mesh"</span>,
+                </div>
+                <div className="pl-4">
+                  circuitBreaker: &#123; maxRetries: <span className="text-amber-300">3</span>, timeoutMs: <span className="text-amber-300">5000</span> &#125;,
+                </div>
+                <div className="pl-4">
+                  nodes: [
+                </div>
+                <div className="pl-8">
+                  <span className="text-sky-300">agentNode</span>(<span className="text-emerald-300">"intent"</span>, &#123; model: <span className="text-emerald-300">"groq/llama-3.3"</span>, replayCache: <span className="text-amber-300">true</span> &#125;),
+                </div>
+                <div className="pl-8">
+                  <span className="text-sky-300">memoryNode</span>(<span className="text-emerald-300">"rag"</span>, &#123; algorithm: <span className="text-emerald-300">"RRF(k=60)"</span>, tenantIsolation: <span className="text-amber-300">true</span> &#125;),
+                </div>
+                <div className="pl-8">
+                  <span className="text-sky-300">actionNode</span>(<span className="text-emerald-300">"dispatch"</span>, &#123; channel: <span className="text-emerald-300">"escalations"</span>, idempotent: <span className="text-amber-300">true</span> &#125;),
+                </div>
+                <div className="pl-4">
+                  ],
+                </div>
+                <div>
+                  &#125;);
+                </div>
               </div>
             )}
 
@@ -913,10 +1268,43 @@ function CTA() {
 /* ----------------------------- FOOTER ----------------------------- */
 function Footer() {
   const cols = [
-    { title: "Platform", links: ["Visual DAG", "Multi-Agent Mesh", "Vector Memory", "Step Replay", "Billing Ledger"] },
-    { title: "Engine", links: ["BullMQ Queues", "Circuit Breakers", "Redis Pub/Sub", "Socket Telemetry", "Vault Encryption"] },
-    { title: "Developers", links: ["Documentation", "Architecture ADRs", "API Reference", "GitHub Repository", "CI Status"] },
-    { title: "Compliance", links: ["SQL Multi-Tenancy", "Self-hosted Docker & PM2", "Idempotent Webhooks", "Apache 2.0 License"] },
+    {
+      title: "Platform",
+      links: [
+        { label: "Visual DAG", href: "/dashboard/workflows" },
+        { label: "Multi-Agent Mesh", href: "/dashboard/agents" },
+        { label: "Vector Memory", href: "/dashboard/workspaces" },
+        { label: "Realtime Telemetry", href: "/dashboard/analytics" },
+        { label: "Pricing Tiers", href: "/pricing" },
+      ],
+    },
+    {
+      title: "Engine",
+      links: [
+        { label: "BullMQ Queue Pools", href: "https://github.com/shankywho/COGNIFY#architecture" },
+        { label: "Circuit Breakers", href: "https://github.com/shankywho/COGNIFY#circuit-breakers" },
+        { label: "Redis Monotonic Events", href: "https://github.com/shankywho/COGNIFY" },
+        { label: "Vault Encryption", href: "https://github.com/shankywho/COGNIFY" },
+      ],
+    },
+    {
+      title: "Developers",
+      links: [
+        { label: "Architecture ADRs", href: "https://github.com/shankywho/COGNIFY/tree/main/docs" },
+        { label: "GitHub Repository", href: "https://github.com/shankywho/COGNIFY" },
+        { label: "Contributing Guide", href: "https://github.com/shankywho/COGNIFY/blob/main/CONTRIBUTING.md" },
+        { label: "About Cognify", href: "/about" },
+      ],
+    },
+    {
+      title: "Compliance",
+      links: [
+        { label: "SQL Multi-Tenancy", href: "https://github.com/shankywho/COGNIFY" },
+        { label: "Self-Hosted Docker", href: "https://github.com/shankywho/COGNIFY#quickstart" },
+        { label: "Idempotent Webhooks", href: "https://github.com/shankywho/COGNIFY" },
+        { label: "Apache 2.0 License", href: "https://github.com/shankywho/COGNIFY/blob/main/LICENSE" },
+      ],
+    },
   ];
 
   return (
@@ -937,10 +1325,24 @@ function Footer() {
               </div>
               <ul className="mt-3 space-y-1.5 text-xs">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-zinc-400 transition-colors hover:text-white">
-                      {link}
-                    </a>
+                  <li key={link.label}>
+                    {link.href.startsWith("http") ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-zinc-400 transition-colors hover:text-white"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={link.href}
+                        className="text-zinc-400 transition-colors hover:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
