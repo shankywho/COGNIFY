@@ -888,9 +888,6 @@ function CTA() {
             <h2 className="text-balance text-3xl font-semibold tracking-tight text-white md:text-5xl">
               Build resilient AI systems that run in production.
             </h2>
-            <p className="mt-3 text-sm md:text-base text-zinc-400 leading-relaxed">
-              Start with 10,000 initial credits in the seeded environment. Zero card required.
-            </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3.5">
               <Button
                 as={Link}

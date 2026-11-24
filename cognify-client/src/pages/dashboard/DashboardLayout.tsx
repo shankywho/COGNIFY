@@ -710,19 +710,12 @@ export const DashboardLayout = () => {
                       <div className="absolute right-0 mt-1.5 w-72 rounded-xl bg-zinc-950 border border-white/10 p-1.5 shadow-2xl z-30">
                         <div className="px-2.5 py-1.5 border-b border-white/10 flex justify-between items-center">
                           <span className="text-[10px] font-bold text-white uppercase tracking-widest">Notifications</span>
-                          <span className="bg-white/10 text-white font-mono px-2 py-0.5 rounded text-[10px]">2 New</span>
+                          <span className="bg-white/10 text-white font-mono px-2 py-0.5 rounded text-[10px]">0 New</span>
                         </div>
                         <div className="flex flex-col gap-0.5 mt-1 max-h-56 overflow-y-auto">
-                          {[
-                            { title: "PR review workflow completed", body: "Workflow: PR Code Review Automator passed all checks.", time: "5 mins ago" },
-                            { title: "Plan renewal processed", body: "Developer Tier active (10,000 initial credits).", time: "2 hours ago" },
-                          ].map((n) => (
-                            <div key={n.title} className="px-2.5 py-2 rounded-lg hover:bg-zinc-900 cursor-pointer">
-                              <p className="text-xs font-semibold text-white">{n.title}</p>
-                              <p className="text-[10px] text-zinc-400 mt-0.5">{n.body}</p>
-                              <p className="text-[9px] text-zinc-500 mt-1 font-mono">{n.time}</p>
-                            </div>
-                          ))}
+                          <div className="px-2.5 py-4 text-center text-xs text-zinc-500 font-mono">
+                            No new notifications
+                          </div>
                         </div>
                       </div>
                     </>
